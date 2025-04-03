@@ -74,11 +74,22 @@ export class GamePlay extends Phaser.GameObjects.Container {
         if (!this.curentSprite || !this.dragging) return;
         this.dragging = false;
         if (this.isValidPosition(this.curentSprite)) {
+            this.curentSprite.disableInteractive();
             this.curentSprite.x = this.curentSprite.target.x;
             this.curentSprite.y = this.curentSprite.target.y;
+            this.curentSprite.placed = true;
         } else {
             this.curentSprite.x = this.curentSprite.startX;
             this.curentSprite.y = this.curentSprite.startY;
+        }
+        this.checkWin();
+    }
+
+    checkWin() {
+        let allPlaced = this.shapesArr.every(sprite => sprite.placed);
+
+        if (allPlaced) {
+            console.log("Win! All shapes placed correctly!");
         }
     }
 
