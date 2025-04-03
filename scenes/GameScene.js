@@ -247,9 +247,6 @@ export default class GameScene extends Phaser.Scene {
     }
 
     offsetWorld(point) {
-        return {
-            x: (point.x * dimensions.actualWidth / this.game.width),
-            y: (point.y * dimensions.actualHeight / this.game.height)
-        };
+        return { x: (point.x * dimensions.actualWidth / dimensions.fullWidth), y: (point.y * dimensions.actualHeight / dimensions.fullHeight) };
     }
 }
