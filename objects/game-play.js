@@ -15,16 +15,19 @@ export class GamePlay extends Phaser.GameObjects.Container {
 
     init() {
         this.level = 1;
+        this.dragStartThreshold = 10;
 
         this.shape = this.scene.add.sprite(0, -260, "shape1");
         this.shape.setOrigin(0.5);
         this.add(this.shape);
 
-        let xPos = [-100, 110, 220, -30, -170, 150, -100];
-        let yPos = [100, 110, 100, 250, 220, 320, 350];
+        let xPos = [-150, 160, 190, -30, -150, 150, 0];
+        let yPos = [350, 110, 230, 200, 100, 320, 90];
+        let angle = [30, 60, 90, 120, 150, 180, 210];
 
         let toX = [-0.5, -127.5, -43.5, 81.5, -88, -1.5, 84.5];
         let toY = [-87.45, -41.45, 0.5, -0.45, 88, 85.5, 127.5];
+        let toAngle = [0, 0, 0, 0, 0, 0, 0];
 
         this.shapesArr = [];
 
@@ -34,14 +37,22 @@ export class GamePlay extends Phaser.GameObjects.Container {
             this.add(sprite);
             this.shapesArr.push(sprite);
             sprite.index = i;
+            sprite.angle = angle[i];
 
             let target = this.scene.add.sprite(toX[i], this.shape.y + toY[i], "sheet", "shape1/shape_" + (i + 1));
             target.setOrigin(0.5, 0.5);
             target.alpha = 0.00000001
             this.add(target);
+            target.angle = toAngle[i];
             sprite.target = target;
 
             sprite.setInteractive({ pixelPerfect: true, alphaTolerance: 1 });
+
+            sprite.on('pointerup', () => {
+                sprite.angle += 30;
+                sprite.angle = Phaser.Math.Angle.WrapDegrees(sprite.angle);
+            });
+
             this.scene.input.setDraggable(sprite);
             sprite.on('dragstart', function(pointer) {
                 this.onTap(pointer, sprite);
@@ -53,7 +64,15 @@ export class GamePlay extends Phaser.GameObjects.Container {
         }
     }
     update() {
-        if (this.dragging) {
+        if (!this.curentSprite) return;
+
+        let pointer = this.scene.input.activePointer;
+        let movedDistance = Phaser.Math.Distance.Between(this.pointerDownX, this.pointerDownY, pointer.x, pointer.y);
+
+        if (!this.dragging && movedDistance > this.dragStartThreshold) {
+            this.dragging = true;
+        }
+        if (this.dragging && this.clicked) {
             let mouse = this.scene.offsetMouse();
             let xPos = (mouse.x - this.x) / this.scaleX;
             let yPos = (mouse.y - this.y) / this.scaleY;
@@ -64,7 +83,10 @@ export class GamePlay extends Phaser.GameObjects.Container {
     }
 
     onTap(pointer, sprite) {
-        this.dragging = true;
+        this.pointerDownX = pointer.downX;
+        this.pointerDownY = pointer.downY;
+        this.dragging = false;
+        this.clicked = true;
         this.curentSprite = sprite;
         this.curentSprite.startX = this.curentSprite.x;
         this.curentSprite.startY = this.curentSprite.y;
@@ -72,6 +94,7 @@ export class GamePlay extends Phaser.GameObjects.Container {
 
     onTapUp() {
         if (!this.curentSprite || !this.dragging) return;
+        this.clicked = false;
         this.dragging = false;
         if (this.isValidPosition(this.curentSprite)) {
             this.curentSprite.disableInteractive();
@@ -94,8 +117,11 @@ export class GamePlay extends Phaser.GameObjects.Container {
     }
 
     isValidPosition() {
-        let distance = Phaser.Math.Distance.Between(this.curentSprite.x, this.curentSprite.y, this.curentSprite.target.x, this.curentSprite.target.y);
-        return distance < 30;
+        let sprite = this.curentSprite;
+        let dist = Phaser.Math.Distance.Between(sprite.x, sprite.y, sprite.target.x, sprite.target.y);
+        let angleDiff = Phaser.Math.Angle.ShortestBetween(sprite.angle, sprite.target.angle);
+
+        return dist < 30 && Math.abs(angleDiff) < 10; // 10° tolerance
     }
 
     adjust() {
