@@ -27,7 +27,7 @@ export class GamePlay extends Phaser.GameObjects.Container {
 
         let xPos = [-194, -221.5, -110.5, -53.9, 25.3, 192, 87];
         let yPos = [229.9, 324.9, 219, 315.6, 236.45, 265, 335.8];
-        let angle = [45, 30, 0, 45, 45, 90, 90];
+        let angle = [30, 30, 0, 30, 30, 90, 90];
 
         this.shapesArr = [];
 
@@ -149,7 +149,7 @@ export class GamePlay extends Phaser.GameObjects.Container {
         let dist = Phaser.Math.Distance.Between(this.pointerDownX, this.pointerDownY, pointer.x, pointer.y);
 
         if (dist < this.dragStartThreshold) {
-            sprite.angle += 15;
+            sprite.angle += 30;
             sprite.angle = Phaser.Math.Angle.WrapDegrees(sprite.angle);
             sprite.disableInteractive();
             sprite.setInteractive({ pixelPerfect: true, alphaTolerance: 1 });
