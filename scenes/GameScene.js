@@ -14,6 +14,7 @@ import config from '../config.js';
 import {
     GamePlay
 } from '../objects/game-play.js';
+import { PlayScreen } from '../objects/play-screen.js';
 
 let dimensions = {}
 export default class GameScene extends Phaser.Scene {
@@ -57,11 +58,14 @@ export default class GameScene extends Phaser.Scene {
         this.gameGroup = this.add.container();
         this.superGroup.add(this.gameGroup);
 
-        // this.bg = this.add.sprite(0, 0, 'bg').setOrigin(0.5);
-        // this.gameGroup.add(this.bg);
+        this.bg = this.add.sprite(0, 0, 'bg').setOrigin(0.5);
+        this.gameGroup.add(this.bg);
 
         this.gamePlay = new GamePlay(this, 0, 0, this, dimensions);
         this.gameGroup.add(this.gamePlay);
+
+        this.playScreen = new PlayScreen(this, 0, 0, this, dimensions);
+        this.gameGroup.add(this.playScreen);
 
         this.logo = this.add.sprite(0, 0, "sheet", 'shape1/shape_1').setOrigin(0.5).setScale(0.4);
         this.gameGroup.add(this.logo);
@@ -222,20 +226,21 @@ export default class GameScene extends Phaser.Scene {
         this.gameGroup.x = (this.game.canvas.width / this.gameScale - dimensions.gameWidth) / 2;
         this.gameGroup.y = (this.game.canvas.height / this.gameScale - dimensions.gameHeight) / 2;
 
-        // this.bg.setScale(1);
-        // let scaleX = dimensions.actualWidth / this.bg.displayWidth;
-        // let scaleY = dimensions.actualHeight / this.bg.displayHeight;
-        // let scale = Math.max(scaleX, scaleY);
-        // this.bg.setScale(scale);
+        this.bg.setScale(1);
+        let scaleX = dimensions.actualWidth / this.bg.displayWidth;
+        let scaleY = dimensions.actualHeight / this.bg.displayHeight;
+        let scale = Math.max(scaleX, scaleY);
+        this.bg.setScale(scale);
 
-        // this.bg.x = dimensions.gameWidth / 2;
-        // this.bg.y = dimensions.gameHeight / 2;
+        this.bg.x = dimensions.gameWidth / 2;
+        this.bg.y = dimensions.gameHeight / 2;
 
         this.logo.x = dimensions.gameWidth / 2 - 200;
         this.logo.y = dimensions.topOffset + 80;
 
         this.gamePlay.adjust();
         this.cta.adjust();
+        this.playScreen.adjust();
     }
 
     offsetMouse() {

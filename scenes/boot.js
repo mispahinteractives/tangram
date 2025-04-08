@@ -12,10 +12,11 @@ export default class Boot extends Phaser.Scene {
     init() {}
 
     preload() {
-        this.load.image('bg', 'assets/bg.jpg');
+        this.load.image('bg', 'assets/bg.png');
         this.load.image('loading_bar_unfilled', 'assets/loading_bar_unfilled.png');
         this.load.image('loading_bar_filled', 'assets/loading_bar_filled.png');
         this.load.image('shape1', 'assets/shape1.png');
+        this.load.image('shape2', 'assets/shape2.png');
         this.load.atlas('sheet', 'assets/sheet.png', 'assets/sheet.json');
 
         this.load.script('webfont', 'lib/webfont.js');

@@ -27,7 +27,7 @@ export default class Preload extends Phaser.Scene {
         let scale = Math.max(scaleX, scaleY);
         this.bg.setScale(scale);
 
-        this.logo = this.add.sprite(this.canvasWidth / 2, this.canvasHeight / 2 - 100, "sheet", 'shape1/shape_1');
+        this.logo = this.add.sprite(this.canvasWidth / 2, this.canvasHeight / 2 - 100, "sheet", 'logo');
         this.logo.setOrigin(0.5).setScale(.8);
 
         this.bar = this.add.sprite(this.canvasWidth / 2, this.canvasHeight / 2 + 100, 'loading_bar_unfilled');
