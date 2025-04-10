@@ -15,6 +15,8 @@ import {
     GamePlay
 } from '../objects/game-play.js';
 import { PlayScreen } from '../objects/play-screen.js';
+import { TopUi } from '../objects/top-ui.js';
+import { Instruction } from '../objects/instruction.js';
 
 let dimensions = {}
 export default class GameScene extends Phaser.Scene {
@@ -63,6 +65,12 @@ export default class GameScene extends Phaser.Scene {
 
         this.gamePlay = new GamePlay(this, 0, 0, this, dimensions);
         this.gameGroup.add(this.gamePlay);
+
+        this.topUi = new TopUi(this, 0, 0, this, dimensions);
+        this.gameGroup.add(this.topUi);
+
+        this.instruction = new Instruction(this, 0, 0, this, dimensions);
+        this.gameGroup.add(this.instruction);
 
         this.playScreen = new PlayScreen(this, 0, 0, this, dimensions);
         this.gameGroup.add(this.playScreen);
@@ -240,6 +248,8 @@ export default class GameScene extends Phaser.Scene {
 
         this.gamePlay.adjust();
         this.cta.adjust();
+        this.topUi.adjust();
+        this.instruction.adjust();
         this.playScreen.adjust();
     }
 

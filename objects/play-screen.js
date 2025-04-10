@@ -71,6 +71,8 @@ export class PlayScreen extends Phaser.GameObjects.Container {
                 this.visible = false;
                 this.alpha = 1;
                 this.scene.gamePlay.show();
+                this.scene.topUi.show()
+                this.scene.instruction.show();
             }
         })
     }
