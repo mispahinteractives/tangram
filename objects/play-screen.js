@@ -40,7 +40,7 @@ export class PlayScreen extends Phaser.GameObjects.Container {
         this.logo.visible = false;
         this.playBtn.visible = false;
         this.visible = false;
-        this.show();
+        // this.show();
     }
 
     show() {
@@ -70,9 +70,8 @@ export class PlayScreen extends Phaser.GameObjects.Container {
             onComplete: () => {
                 this.visible = false;
                 this.alpha = 1;
-                this.scene.gamePlay.show();
-                this.scene.topUi.show()
-                this.scene.instruction.show();
+                this.scene.intro.show();
+                // this.scene.levelScreen.show()
             }
         })
     }

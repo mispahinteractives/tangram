@@ -14,12 +14,40 @@ export class GamePlay extends Phaser.GameObjects.Container {
     }
 
     init() {
-        this.level = 1;
+        this.level = 2;
         this.dragStartThreshold = 10;
 
-        this.shape = this.scene.add.sprite(0, 0, "shape2");
+
+        this.shape = this.scene.add.sprite(0, 0, "level", "shapes/level_" + this.level);
         this.shape.setOrigin(0.5);
         this.add(this.shape);
+        this.shape.alpha = .00000001
+
+        const polygonData = this.scene.cache.json.get('level2');
+        console.log(polygonData);
+
+        const graphics = this.scene.add.graphics({
+            lineStyle: { width: 1, color: 0xff0000 }
+        });
+
+        polygonData.level_2.forEach((entry) => {
+            const points = entry.shape;
+
+            const polyPoints = [];
+            for (let i = 0; i < points.length; i += 2) {
+                polyPoints.push(new Phaser.Geom.Point(points[i], points[i + 1]));
+            }
+
+            graphics.strokePoints(polyPoints, true);
+            this.add(graphics)
+
+            graphics.x = this.shape.x - this.shape.width / 2;
+            graphics.y = this.shape.y - this.shape.height / 2;
+        });
+
+        this.levelPolygons = polygonData.level_2.map((entry) => {
+            return new Phaser.Geom.Polygon(entry.shape);
+        });
 
         let toX = [-210, -159.5, -185.5, -153.5, -39, 32, 181];
         let toY = [-92.05, -92.05, -41.05, 29, 55.5, 71, 120.9];
@@ -32,17 +60,18 @@ export class GamePlay extends Phaser.GameObjects.Container {
         this.shapesArr = [];
 
         for (let i = 0; i < xPos.length; i++) {
-            let sprite = this.scene.add.sprite(xPos[i], yPos[i], "sheet", "shape2/shape" + (i + 1));
+            let sprite = this.scene.add.sprite(xPos[i], yPos[i], "sheet", "shapes/shape" + (i + 1));
             sprite.setOrigin(0.5, 0.5);
             this.add(sprite);
             this.shapesArr.push(sprite);
+            sprite.alpha = .7
             sprite.index = i;
             sprite.angle = angle[i];
             sprite.visible = false;
             sprite.xPos = xPos[i];
             sprite.yPos = yPos[i];
 
-            let target = this.scene.add.sprite(toX[i], toY[i], "sheet", "shape2/shape" + (i + 1));
+            let target = this.scene.add.sprite(toX[i], toY[i], "sheet", "shapes/shape" + (i + 1));
             target.setOrigin(0.5, 0.5);
             target.alpha = 0.00000001
             this.add(target);
@@ -60,6 +89,8 @@ export class GamePlay extends Phaser.GameObjects.Container {
 
         this.visible = false;
         this.shape.visible = false;
+
+        this.show();
     }
 
     show() {
@@ -97,44 +128,59 @@ export class GamePlay extends Phaser.GameObjects.Container {
 
     enable() {
         for (let i = 0; i < this.shapesArr.length; i++) {
-            this.shapesArr[i].setInteractive({ pixelPerfect: true, alphaTolerance: 1 });
-        }
-        this.scene.input.setDraggable(this.shapesArr);
-    }
-    update() {
-        if (!this.curentSprite) return;
+            const shape = this.shapesArr[i];
+            shape.setInteractive({ pixelPerfect: true, alphaTolerance: 1 });
 
-        let pointer = this.scene.input.activePointer;
-        let movedDistance = Phaser.Math.Distance.Between(this.pointerDownX, this.pointerDownY, pointer.x, pointer.y);
-        if (this.curentSprite && !this.dragging && movedDistance > this.dragStartThreshold) {
-            this.dragging = true;
-        }
-        if (this.curentSprite && this.dragging && this.clicked) {
-            let mouse = this.scene.offsetMouse();
-            let xPos = (mouse.x - this.x) / this.scaleX;
-            let yPos = (mouse.y - this.y) / this.scaleY;
-            let leftX = this.dimensions.leftOffset - this.x + 30;
-            let rightX = this.dimensions.rightOffset - this.x - 30;
-            let topY = this.dimensions.topOffset - this.y + 30;
-            let bottomY = this.dimensions.bottomOffset - this.y - 30;
+            shape.on('pointerdown', (pointer) => {
+                this.pointerDownX = pointer.x;
+                this.pointerDownY = pointer.y;
+                this.curentSprite = shape;
+                this.clicked = true;
+                this.dragging = false;
+            });
 
-            this.curentSprite.x = xPos;
-            this.curentSprite.y = yPos;
-            this.bringToTop(this.curentSprite);
-            if (this.curentSprite.x < leftX || this.curentSprite.x > rightX || this.curentSprite.y < topY || this.curentSprite.y > bottomY) {
-                this.scene.tweens.add({
-                    targets: this.curentSprite,
-                    x: this.shapesArr[this.curentSprite.index].xPos,
-                    y: this.shapesArr[this.curentSprite.index].yPos,
-                    duration: 300,
-                    ease: 'Back.easeOut',
-                    onComplete: () => {
-                        this.clicked = false;
-                        this.curentSprite = null;
-                    }
-                });
+            shape.on('pointerup', (pointer) => {
+                this.onTapUp(pointer, shape);
+            });
+        }
+
+        this.scene.input.on('pointermove', (pointer) => {
+            if (this.clicked && this.curentSprite && !this.dragging) {
+                const dist = Phaser.Math.Distance.Between(this.pointerDownX, this.pointerDownY, pointer.x, pointer.y);
+                if (dist > this.dragStartThreshold) {
+                    this.dragging = true;
+                }
             }
+        });
+    }
+
+    update() {
+        if (!this.curentSprite || !this.dragging) return;
+
+        const mouse = this.scene.offsetMouse();
+        const xPos = (mouse.x - this.x) / this.scaleX;
+        const yPos = (mouse.y - this.y) / this.scaleY;
+
+        this.curentSprite.x = xPos;
+        this.curentSprite.y = yPos;
+        this.bringToTop(this.curentSprite);
+
+        const testPoint = new Phaser.Geom.Point(xPos, yPos);
+
+        const isInsidePolygon = this.levelPolygons.some(polygon =>
+            Phaser.Geom.Polygon.Contains(polygon, testPoint)
+        );
+
+        this.curentSprite.alpha = isInsidePolygon ? 1 : 0.7;
+
+        if (this.isValidPosition(this.curentSprite)) {
+            this.snapToTarget(this.curentSprite);
+            this.checkWin();
+            this.curentSprite = null;
         }
+
+        console.log("Inside polygon?", isInsidePolygon);
+        console.log("Pointer:", xPos, yPos, "Adjusted:", testPoint);
     }
 
     onTap(pointer, sprite) {
@@ -146,33 +192,27 @@ export class GamePlay extends Phaser.GameObjects.Container {
     }
 
     onTapUp(pointer, sprite) {
-        let dist = Phaser.Math.Distance.Between(this.pointerDownX, this.pointerDownY, pointer.x, pointer.y);
+        const dist = Phaser.Math.Distance.Between(this.pointerDownX, this.pointerDownY, pointer.x, pointer.y);
 
         if (dist < this.dragStartThreshold) {
-            sprite.angle += 30;
+            // Just rotate
+            sprite.angle += 15;
             sprite.angle = Phaser.Math.Angle.WrapDegrees(sprite.angle);
             sprite.disableInteractive();
             sprite.setInteractive({ pixelPerfect: true, alphaTolerance: 1 });
-        } else {
-            if (this.isValidPosition(sprite)) {
-                sprite.disableInteractive();
-                sprite.x = sprite.target.x;
-                sprite.y = sprite.target.y;
-                sprite.placed = true;
-            } else {
-                this.scene.tweens.add({
-                    targets: sprite,
-                    x: this.shapesArr[sprite.index].xPos,
-                    y: this.shapesArr[sprite.index].yPos,
-                    duration: 300,
-                    ease: 'Back.easeOut'
-                });
-            }
-            this.checkWin();
         }
 
         this.clicked = false;
         this.curentSprite = null;
+    }
+
+    snapToTarget(sprite) {
+        sprite.alpha = 1;
+        sprite.disableInteractive();
+        sprite.x = sprite.target.x;
+        sprite.y = sprite.target.y;
+        sprite.angle = sprite.target.angle;
+        sprite.placed = true;
     }
 
     checkWin() {
@@ -183,19 +223,16 @@ export class GamePlay extends Phaser.GameObjects.Container {
         }
     }
 
-    isValidPosition() {
-        const sprite = this.curentSprite;
-        if (!sprite) return false;
-
+    isValidPosition(sprite) {
         const dist = Phaser.Math.Distance.Between(sprite.x, sprite.y, sprite.target.x, sprite.target.y);
-        if (dist >= 30) return false;
+        if (dist > 30) return false;
 
-        const validAngles = this.getValidAngles(sprite.index);
         const spriteAngle = Phaser.Math.Angle.WrapDegrees(sprite.angle);
+        const targetAngle = Phaser.Math.Angle.WrapDegrees(sprite.target.angle);
 
-        return validAngles.some(targetAngle =>
-            Math.abs(Phaser.Math.Angle.ShortestBetween(spriteAngle, targetAngle)) <= 10
-        );
+        const angleDiff = Math.abs(Phaser.Math.Angle.ShortestBetween(spriteAngle, targetAngle));
+
+        return angleDiff <= 10;
     }
 
     getValidAngles(index) {
@@ -205,15 +242,15 @@ export class GamePlay extends Phaser.GameObjects.Container {
             case 1:
                 return [0];
             case 2:
-                return [0, 90];
+                return [0];
             case 3:
                 return [0];
             case 4:
                 return [0];
             case 5:
-                return [0];
+                return [90];
             case 6:
-                return [0, 180];
+                return [90];
             default:
                 return [0];
         }
@@ -221,6 +258,6 @@ export class GamePlay extends Phaser.GameObjects.Container {
 
     adjust() {
         this.x = this.dimensions.gameWidth / 2;
-        this.y = this.dimensions.gameHeight / 2 + 50;
+        this.y = this.dimensions.gameHeight / 2;
     }
 }

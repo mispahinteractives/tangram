@@ -17,6 +17,8 @@ import {
 import { PlayScreen } from '../objects/play-screen.js';
 import { TopUi } from '../objects/top-ui.js';
 import { Instruction } from '../objects/instruction.js';
+import { Intro } from '../objects/intro.js';
+import { LevelScreen } from '../objects/level-screen.js';
 
 let dimensions = {}
 export default class GameScene extends Phaser.Scene {
@@ -55,6 +57,7 @@ export default class GameScene extends Phaser.Scene {
 
         this.text = string;
         // window.restart = true;
+        this.level = 1;
 
         this.superGroup = this.add.container();
         this.gameGroup = this.add.container();
@@ -63,11 +66,17 @@ export default class GameScene extends Phaser.Scene {
         this.bg = this.add.sprite(0, 0, 'bg').setOrigin(0.5);
         this.gameGroup.add(this.bg);
 
+        this.intro = new Intro(this, 0, 0, this, dimensions);
+        this.gameGroup.add(this.intro);
+
         this.gamePlay = new GamePlay(this, 0, 0, this, dimensions);
         this.gameGroup.add(this.gamePlay);
 
         this.topUi = new TopUi(this, 0, 0, this, dimensions);
         this.gameGroup.add(this.topUi);
+
+        this.levelScreen = new LevelScreen(this, 0, 0, this, dimensions);
+        this.gameGroup.add(this.levelScreen);
 
         this.instruction = new Instruction(this, 0, 0, this, dimensions);
         this.gameGroup.add(this.instruction);
@@ -75,9 +84,9 @@ export default class GameScene extends Phaser.Scene {
         this.playScreen = new PlayScreen(this, 0, 0, this, dimensions);
         this.gameGroup.add(this.playScreen);
 
-        this.logo = this.add.sprite(0, 0, "sheet", 'shape1/shape_1').setOrigin(0.5).setScale(0.4);
+        this.logo = this.add.sprite(0, 0, "sheet", 'logo').setOrigin(0.5).setScale(0.4);
         this.gameGroup.add(this.logo);
-        this.logo.visible = false
+        this.logo.visible = false;
 
         this.cta = new CTA(this, 0, 0, this, dimensions);
         this.gameGroup.add(this.cta);
@@ -243,14 +252,16 @@ export default class GameScene extends Phaser.Scene {
         this.bg.x = dimensions.gameWidth / 2;
         this.bg.y = dimensions.gameHeight / 2;
 
-        this.logo.x = dimensions.gameWidth / 2 - 200;
-        this.logo.y = dimensions.topOffset + 80;
+        this.logo.x = dimensions.gameWidth / 2 - 150;
+        this.logo.y = dimensions.topOffset + 60;
 
         this.gamePlay.adjust();
         this.cta.adjust();
         this.topUi.adjust();
         this.instruction.adjust();
+        this.levelScreen.adjust();
         this.playScreen.adjust();
+        this.intro.adjust();
     }
 
     offsetMouse() {

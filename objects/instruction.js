@@ -13,7 +13,7 @@ export class Instruction extends Phaser.GameObjects.Container {
 
     init() {
 
-        this.initialLevel = 1;
+        this.initialLevel = this.scene.gamePlay.level;
 
         this.text = this.scene.add.text(0, 0, this.scene.text.texts[0].levelTxt + "-" + this.initialLevel, {
             fontFamily: "UberMoveMedium",
@@ -24,6 +24,7 @@ export class Instruction extends Phaser.GameObjects.Container {
         });
         this.text.setOrigin(0.5);
         this.add(this.text);
+        this.text.setPadding(10, 10);
 
         this.text1 = this.scene.add.text(0, 65, this.scene.text.texts[0].intro1, {
             fontFamily: "UberMoveMedium",
